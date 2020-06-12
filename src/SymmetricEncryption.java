@@ -3,10 +3,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 
-import java.io.Serializable;
 import java.security.*;
 
-public class SymmetricEncryption implements Serializable {
+public class SymmetricEncryption {
     static IvParameterSpec ivSpec;
     static Cipher cipher;
 
@@ -59,12 +58,6 @@ public class SymmetricEncryption implements Serializable {
     public static byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException 
     {
-
-        System.out.println("CIPHER");
-        System.out.println(cipher);
-
-        System.out.println("IVSPEC");
-        System.out.println(ivSpec);
 
         //System.out.printf("Encrypting message '%s'...\n", message);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);

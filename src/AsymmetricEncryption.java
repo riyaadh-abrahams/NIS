@@ -2,11 +2,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 
-public class AsymmetricEncryption implements Serializable {
+public class AsymmetricEncryption {
 
     public static IvParameterSpec ivSpec;
 

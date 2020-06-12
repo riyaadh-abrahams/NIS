@@ -73,7 +73,7 @@ public class ServerThread extends Thread {
 					Util.printByteArray("Public key", clientPublicKey.getEncoded());
 	
 					Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
-					Util.printlnc("Secure Connection Established!\nEnter your message ", Util.Color.GREEN_BOLD);
+					Util.printlnc("Secure Connection Established!\nWaiting fore messages ", Util.Color.GREEN_BOLD);
 					Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
 					Util.printc("\r>>>", Util.Color.GREEN_BOLD);
 				}
@@ -83,13 +83,17 @@ public class ServerThread extends Thread {
 				}
 				else if(incomingMessage.type == Message.MessageType.ENCRYPTED)
 				{
-					System.out.println(incomingMessage.DecryptAndGet(server.serverPrivateKey, clientPublicKey));
+					Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
+					Util.printlnc("Encrypted Message Received. Decrypting...", Util.Color.GREEN_BOLD);
+					Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
+					String decryptedMessage = incomingMessage.pgp.GetDecryptedMessage(server.serverPrivateKey, clientPublicKey);
+					System.out.println(decryptedMessage);
 				}
 				
 																							// console
 
 				// send input to server, which will send it to all clients
-				server.broadcast(id, incomingMessage);
+				//server.broadcast(id, incomingMessage);
 			} catch (IOException e) {
 				System.out.println("Error in ServerThread run(), IO");
 				System.out.println(e);

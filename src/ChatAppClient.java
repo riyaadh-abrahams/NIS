@@ -9,6 +9,7 @@ import java.security.cert.X509Certificate;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SealedObject;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -16,6 +17,7 @@ import java.io.*;
 
 public class ChatAppClient implements Runnable {
 	private PrivateKey clientPrivateKey;
+	private PrivateKey serverPrivateKey;
 	private X509Certificate clientPublicCertificate;
 	private PublicKey clientPublicKey;
 	private int portNumber;
@@ -50,6 +52,7 @@ public class ChatAppClient implements Runnable {
 		Util.printlnc("Loading Client Private and Public Keys", Util.Color.YELLOW_BOLD);
 		Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
 		clientPrivateKey = (PrivateKey) keyStore.getKey("clientkey", pass);
+		serverPrivateKey = (PrivateKey) keyStore.getKey("chatappkeys", pass);
 	   
 		
 		clientPublicCertificate = (X509Certificate) keyStore.getCertificate("clientkey");
@@ -107,6 +110,7 @@ public class ChatAppClient implements Runnable {
 				
 				PGP myPgp = new PGP(serverPublicKey, clientPrivateKey, userInput);
 				Message m = new Message(Message.MessageType.ENCRYPTED,userInput, activeUser, myPgp);
+
 
 				outputObject.writeObject(m);
 				// System.out.println("Message Sent\n");

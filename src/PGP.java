@@ -8,6 +8,10 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 public class PGP implements Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 2L;
     public byte[] encryptedSessionKey; // used to decrypt message, should be decrypted using recipient private key
     public byte[] signature; // for integrity
     public byte[] encryptedMessage; // compressed and encrypted using symmetric encryption
@@ -16,9 +20,10 @@ public class PGP implements Serializable {
             throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             UnsupportedEncodingException {
-
-            CreateAndEncryptSessionKeyAndMessage(recipientPublicKey, message);
+            
             SignMessage(senderPrivateKey, message);
+            CreateAndEncryptSessionKeyAndMessage(recipientPublicKey, message);
+           
 
             //Util.printByteArray("Encrypted Session Key: ", encryptedSessionKey);
             //Util.printByteArray("Signature: ", signature);
@@ -47,23 +52,27 @@ public class PGP implements Serializable {
         System.out.println("Creating Session Key...");
         Key sessionKey = SymmetricEncryption.generateKey();
         Util.printByteArray("Session key created: ", sessionKey.getEncoded());
-        
-        System.out.println("Encrypting session Key with recipient public key...");
-        byte[] encryptedSessionKey = AsymmetricEncryption.encrypt(sessionKey.getEncoded(), recipientPublicKey);
-        this.encryptedSessionKey =  encryptedSessionKey;
-        Util.printByteArray("Cipher Session key: ", encryptedSessionKey);
 
         System.out.println("Compressing Message...");
         byte[] compressedMessage = Util.zip(message);
         Util.printByteArray("Compressed message: ", compressedMessage);
         System.out.println("Size Before: " + message.getBytes().length);
         System.out.println("Size After: " + compressedMessage.length);
-        
+
         System.out.println("Encrypting Message with Session Key...");
         System.out.println("Plain Text: " + message);
         byte[] encryptedMessage = SymmetricEncryption.encrypt(compressedMessage, sessionKey);
         this.encryptedMessage = encryptedMessage;
         Util.printByteArray("Cipher Text: ", encryptedMessage);
+        
+        System.out.println("Encrypting session Key with recipient public key...");
+        byte[] encryptedSessionKey = AsymmetricEncryption.encrypt(sessionKey.getEncoded(), recipientPublicKey);
+        this.encryptedSessionKey =  encryptedSessionKey;
+        Util.printByteArray("Cipher Session key: ", encryptedSessionKey);
+
+      
+        
+      
     }
 
 
@@ -84,7 +93,7 @@ public class PGP implements Serializable {
         Key sessionKey = new SecretKeySpec(DecryptSessionKey(recipientPrivateKey), "AES");
         Util.printByteArray("Decrypted. Plain text session key: ", sessionKey.getEncoded());
 
-        Util.printByteArray("Cipher Message: ", encryptedMessage);
+        Util.printByteArray("Cipher Text: ", encryptedMessage);
         System.out.println("Decrypting message...");
         byte[] compressedMessage = SymmetricEncryption.decryptByteArray(this.encryptedMessage, sessionKey);
         Util.printByteArray("Decrypted. Compressed message: ", compressedMessage);

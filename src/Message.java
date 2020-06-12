@@ -16,7 +16,12 @@ import javax.crypto.NoSuchPaddingException;
 
 
 public class Message implements Serializable {
-	public enum MessageType{
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public enum MessageType {
 		UNENCRYPTED,
 		ENCRYPTED,
 		SEND_CERTIFICATE
