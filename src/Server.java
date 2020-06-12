@@ -1,22 +1,58 @@
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 // Server class
-public class Server
-{
-
+public class Server {
     // Vector to store active clients
     static ArrayList<Control> ar = new ArrayList<>();
+
+    static PrivateKey serverPrivateKey;
+    static X509Certificate serverPublicCertificate;
+    static PublicKey serverPublicKey;
+    
 
     // counter for clients
     static int i = 0;
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
+            throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
+            UnrecoverableKeyException
     {
+        Util.printlnc("--------------------------------------------", Util.Color.CYAN_BOLD_BRIGHT);
+        Util.printlnc("Server Started", Util.Color.CYAN_BOLD_BRIGHT);
+        Util.printlnc("--------------------------------------------", Util.Color.CYAN_BOLD_BRIGHT);
+
+        // Read the private keystore and get Private Key
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        // keystore password is required to access keystore 
+        char[] pass = ("changeit").toCharArray();
+
+        //Keystore File
+        FileInputStream keyFile = new FileInputStream("./keys/keystore.jks");
+        //load keystore
+        keyStore.load(keyFile, pass);
+
+        Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+        Util.printlnc("Loading Server Private and Public Keys", Util.Color.YELLOW_BOLD);
+        Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+        serverPrivateKey = (PrivateKey) keyStore.getKey("chatappkeys", pass);
+
+        //Public key
+        serverPublicCertificate = (X509Certificate) keyStore.getCertificate("chatappkeys");
+        serverPublicKey = serverPublicCertificate.getPublicKey();
+
+        Util.printByteArray("Private key", serverPrivateKey.getEncoded());
+        System.out.println();
+        Util.printByteArray("Public key", serverPublicKey.getEncoded());
+
+
         // server is listening on port 1234
         ServerSocket ss = new ServerSocket(1234);
-        System.out.println("Server Started. Waiting for Clients...");
+        Util.printlnc("\nWaiting for Clients...", Util.Color.YELLOW_BOLD); System.out.println();
 
         Socket s;
 

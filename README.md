@@ -1,14 +1,25 @@
 ## Getting Started
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Run all commands from the root directory. The reletive paths in the code are all set up to work when running from the root directory.
+Do not run from withing the src directory.
 
-## Folder Structure
+## How to Compile Everything
 
-The workspace contains two folders by default, where:
+javac -sourcepath src/*.java -cp "lib/*;src"
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+## How to Run
 
-## Dependency Management
+1) `Run the Server`
+    java -cp "src;lib/*" Server
 
-The `JAVA DEPENDENCIES` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-pack/blob/master/release-notes/v0.9.0.md#work-with-jar-files-directly).
+2) `Run the Client` (You will be asked to enter your name)
+    java -cp "src;lib/*" Client
+
+3) `Run another Client` (You will 2 clients to send messages to each other)
+    java -cp "src;lib/*" Client
+
+4) `Send private message`
+    Use `@name <message>` to send messages to other clients
+    eg `@Riyaadh Hello World`
+
+

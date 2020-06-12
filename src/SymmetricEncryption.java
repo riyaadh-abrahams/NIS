@@ -23,33 +23,48 @@ public class SymmetricEncryption
 
     public Key generateKey() throws NoSuchAlgorithmException
     {
-        System.out.println("Generating key...");
-
+        //System.out.println("Generating key...");
         KeyGenerator myGenerator = KeyGenerator.getInstance("AES");
         myGenerator.init(256);
         Key key =  myGenerator.generateKey();
-
-        System.out.println("Key Generated: " + key);
+        //Util.printByteArray("Key Generated:", key.getEncoded());
         return key;
     }
     public byte[] encrypt(String message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException 
     {
-        System.out.printf("Encrypting message '%s'...\n", message);
+       return encrypt(message.getBytes(), secretKey);
+    }
+
+    public byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException 
+    {
+        //System.out.printf("Encrypting message '%s'...\n", message);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-        byte[] encryptedMessage = cipher.doFinal(message.getBytes());
-        System.out.printf("Encryption Complete! Output: '%s'\n", encryptedMessage);
-
-
+        byte[] encryptedMessage = cipher.doFinal(message);
+        //System.out.println("Encryption Complete!");
+        //Util.printByteArray("Cipher Text:", encryptedMessage);
         return encryptedMessage;
     }
+
     public String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
     {
-        System.out.printf("Decrypting message '%s'...\n", encryptedMessage);
+        //System.out.println("Decrypting message...");
+        //Util.printByteArray("Cipher Text", encryptedMessage);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
         String decryptedMessage = new String(cipher.doFinal(encryptedMessage));
-        System.out.printf("Decryption Complete! Output: '%s'\n", decryptedMessage);
+        //System.out.printf("Decryption Complete! Output: '%s'\n", decryptedMessage);
 
         return decryptedMessage;
     }
+
+    public byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
+    {
+        //System.out.println("Decrypting message...");
+        //Util.printByteArray("Cipher Text", encryptedMessage);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+        byte[] decryptedMessage = cipher.doFinal(encryptedMessage);
+        //System.out.printf("Decryption Complete! Output: '%s'\n", decryptedMessage);
+        return decryptedMessage;
+    }
+    
 
 }
