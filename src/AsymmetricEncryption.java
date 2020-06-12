@@ -2,26 +2,27 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 
-public class AsymmetricEncryption {
+public class AsymmetricEncryption implements Serializable {
 
-    public Cipher cipher;
-    public IvParameterSpec ivSpec;
+    public static Cipher cipher;
+    public static IvParameterSpec ivSpec;
 
     public AsymmetricEncryption() throws NoSuchAlgorithmException, NoSuchPaddingException {
         Security.addProvider(new BouncyCastleProvider());
         cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
     }
 
-    public byte[] encrypt(String message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException,
+    public static byte[] encrypt(String message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException 
     {
         return encrypt(message.getBytes(), secretKey);
     }
 
-    public byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException,
+    public static byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException,
             IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException 
     {
@@ -34,7 +35,7 @@ public class AsymmetricEncryption {
         return encryptedMessage;
     }
 
-    public String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
+    public static String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
     {
         //System.out.println("Decrypting message...");
         //Util.printByteArray("Cipher Text", encryptedMessage);
@@ -47,7 +48,7 @@ public class AsymmetricEncryption {
         return decryptedMessage;
     }
 
-    public byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
+    public static byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
     {
         //System.out.println("Decrypting Byte Array...");
         //Util.printByteArray("Cipher Text", encryptedMessage);

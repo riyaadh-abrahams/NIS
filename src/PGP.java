@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 
@@ -6,13 +7,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-public class PGP {
+public class PGP implements Serializable {
     public byte[] encryptedSessionKey; // used to decrypt message, should be decrypted using recipient private key
     public byte[] signature; // for integrity
     public byte[] encryptedMessage; // compressed and encrypted using symmetric encryption
-
-    SymmetricEncryption symmetricEncryption = new SymmetricEncryption();
-    AsymmetricEncryption asymmetricEncryption = new AsymmetricEncryption();
 
     public PGP(PublicKey recipientPublicKey, PrivateKey senderPrivateKey, String message)
             throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
@@ -30,12 +28,14 @@ public class PGP {
 
     void SignMessage(PrivateKey senderPrivateKey, String message)
             throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
-        //System.out.println("Signing Message");
+        System.out.println("Signing Message");
         Signature signatureAlgorithm = Signature.getInstance("SHA256WithRSA");
         signatureAlgorithm.initSign(senderPrivateKey);
         signatureAlgorithm.update(message.getBytes());
 
         byte[] signature = signatureAlgorithm.sign();
+
+        Util.printByteArray("Signature: ", signature);
 
         this.signature = signature;
     }
@@ -44,51 +44,63 @@ public class PGP {
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException
     {
-        //System.out.println("Creating Encrypted Session Key");
-        Key sessionKey = symmetricEncryption.generateKey();
+        System.out.println("Creating Encrypted Session Key");
+        Key sessionKey = SymmetricEncryption.generateKey();
 
-        //System.out.println("Compressing Message...");
+        System.out.println("Compressing Message...");
         byte[] compressedMessage = Util.zip(message);
-        //System.out.println("Size Before: " + message.getBytes().length);
-        //System.out.println("Size After: " + compressedMessage.length);
+        System.out.println("Size Before: " + message.getBytes().length);
+        System.out.println("Size After: " + compressedMessage.length);
         
-
-        byte[] encryptedMessage = symmetricEncryption.encrypt(compressedMessage, sessionKey);
+        System.out.println("Encrypting Message with Session Key...");
+        byte[] encryptedMessage = SymmetricEncryption.encrypt(compressedMessage, sessionKey);
         this.encryptedMessage = encryptedMessage;
+        Util.printByteArray("Cipher Text: ", encryptedMessage);
 
-        byte[] encryptedSessionKey = asymmetricEncryption.encrypt(sessionKey.getEncoded(), recipientPublicKey);
+        System.out.println("Encrypting session Key with recipient public key...");
+        byte[] encryptedSessionKey = AsymmetricEncryption.encrypt(sessionKey.getEncoded(), recipientPublicKey);
         this.encryptedSessionKey =  encryptedSessionKey;
+        Util.printByteArray("Cipher Session key: ", encryptedSessionKey);
     }
 
 
     public byte[] DecryptSessionKey(PrivateKey recipientPrivateKey) throws InvalidKeyException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 
-        byte[] decryptedSessionKey = asymmetricEncryption.decryptByteArray(this.encryptedSessionKey, recipientPrivateKey);
+        byte[] decryptedSessionKey = AsymmetricEncryption.decryptByteArray(this.encryptedSessionKey, recipientPrivateKey);
         return decryptedSessionKey;
     }
 
     public String GetDecryptedMessage(PrivateKey recipientPrivateKey, PublicKey senderPublickey) throws InvalidKeyException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, SignatureException
-    {
+            NoSuchAlgorithmException, SignatureException, NoSuchPaddingException
+    {   
+        Util.printByteArray("Cipher Session key: ", encryptedSessionKey);
+        System.out.println("Decrypting session key...");
         Key sessionKey = new SecretKeySpec(DecryptSessionKey(recipientPrivateKey), "AES");
-        byte[] compressedMessage = symmetricEncryption.decryptByteArray(this.encryptedMessage, sessionKey);
+        Util.printByteArray("Decrypted. Plain text session key: ", sessionKey.getEncoded());
+
+        Util.printByteArray("Cipher Message: ", encryptedMessage);
+        System.out.println("Decrypting message...");
+        byte[] compressedMessage = SymmetricEncryption.decryptByteArray(this.encryptedMessage, sessionKey);
+        Util.printByteArray("Decrypted. Compressed message: ", compressedMessage);
 
         //verify signature
-        //System.out.println("Verifying Signature...");
+        System.out.println("Verifying Signature...");
         Signature verificationAlgorithm = Signature.getInstance("SHA256WithRSA");
         verificationAlgorithm.initVerify(senderPublickey);
         verificationAlgorithm.update(compressedMessage);
         boolean matches = verificationAlgorithm.verify(signature);
 
         if(matches) {
-            //System.out.println("Signature Verified");
+            System.out.println("Signature Verified");
         } else {
-           // System.out.println("Signature Not Correct");
+            System.out.println("Signature Not Correct");
         }
 
+        System.out.println("Decompressing message...");
         String finalMessage = Util.unzip(compressedMessage);
+        System.out.println("Message Decompressed. Final Output: " +finalMessage);
         return finalMessage;
     }
 

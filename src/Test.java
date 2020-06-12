@@ -54,6 +54,8 @@ public class Test {
             X509Certificate clientPublicCertificate = (X509Certificate) keyStore.getCertificate("clientkey");
             PublicKey clientPublicKey = clientPublicCertificate.getPublicKey();
 
+            
+
             //Util.printByteArray("Client Public key", clientPublicCertificate.getEncoded());
 
           /*   AsymmetricEncryption asymmetricEncryption = new AsymmetricEncryption();
