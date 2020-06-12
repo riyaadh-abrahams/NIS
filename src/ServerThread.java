@@ -93,7 +93,7 @@ public class ServerThread extends Thread {
 																							// console
 
 				// send input to server, which will send it to all clients
-				//server.broadcast(id, incomingMessage);
+				server.broadcast(id, incomingMessage);
 			} catch (IOException e) {
 				System.out.println("Error in ServerThread run(), IO");
 				System.out.println(e);
