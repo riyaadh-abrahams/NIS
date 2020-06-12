@@ -1,7 +1,7 @@
 ## Getting Started
 
 Run all java applications from the root directory. The relative paths in the code are all set up to work when running from the root directory.
-Do not run from withing the src directory. You can compile from the src directory
+Do not run from within the src directory. You can compile from the src directory
 
 ## How to Compile Everything
 
