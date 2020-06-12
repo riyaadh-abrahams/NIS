@@ -15,9 +15,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.io.*;
 
 public class ChatAppClient implements Runnable {
-	private static PrivateKey clientPrivateKey;
-	private static X509Certificate clientPublicCertificate;
-	private static PublicKey clientPublicKey;
+	private PrivateKey clientPrivateKey;
+	private X509Certificate clientPublicCertificate;
+	private PublicKey clientPublicKey;
 	private int portNumber;
 	private User activeUser;
 
@@ -28,11 +28,39 @@ public class ChatAppClient implements Runnable {
 	private Thread thread = null;
 	private Socket socket;
 
-	PublicKey publicKey;
+	PublicKey serverPublicKey;
 
-	public ChatAppClient(String hostname, int portNumber, String user_name) {
+	public ChatAppClient(String hostname, int portNumber, String user_name)
+			throws NoSuchAlgorithmException, CertificateException, IOException, KeyStoreException,
+			UnrecoverableKeyException {
 		// System.out.println("Starting ChatAppClient()");
 		Security.addProvider(new BouncyCastleProvider());
+
+		// Read the private keystore and get Private Key
+		KeyStore keyStore = KeyStore.getInstance("JKS");
+		// keystore password is required to access keystore 
+		char[] pass = ("changeit").toCharArray();
+
+		//Keystore File
+		FileInputStream keyFile = new FileInputStream("./keys/keystore.jks");
+		//load keystore
+		keyStore.load(keyFile, pass);
+
+		Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+		Util.printlnc("Loading Client Private and Public Keys", Util.Color.YELLOW_BOLD);
+		Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+		clientPrivateKey = (PrivateKey) keyStore.getKey("clientkey", pass);
+	   
+		
+		clientPublicCertificate = (X509Certificate) keyStore.getCertificate("clientkey");
+		clientPublicKey = clientPublicCertificate.getPublicKey();
+
+		X509Certificate serverPublicCertificate = (X509Certificate) keyStore.getCertificate("chatappkeys");
+		serverPublicKey = serverPublicCertificate.getPublicKey();
+
+		Util.printByteArray("Private key", clientPrivateKey.getEncoded());
+		System.out.println();
+		Util.printByteArray("Public key", clientPublicKey.getEncoded());
 
 		this.portNumber = portNumber;
 		activeUser = new User(user_name, hostname);
@@ -68,8 +96,14 @@ public class ChatAppClient implements Runnable {
 			try {
 				Util.printc(">>> ", Util.Color.GREEN_BOLD);
 				String userInput = consoleIn.readLine();// this is the message that will eventually be sent to another
-														// user.
-				Message m = new Message(userInput, activeUser, new PGP(publicKey, clientPrivateKey, userInput));
+				
+				System.out.println("client public key");
+				System.out.println(clientPublicKey.hashCode());
+				System.out.println("server public key");
+				System.out.println(serverPublicKey.hashCode());
+				
+				PGP myPgp = new PGP(serverPublicKey, clientPrivateKey, userInput);
+				Message m = new Message(userInput, activeUser, myPgp);
 
 				outputObject.writeObject(m);
 				// System.out.println("Message Sent\n");
@@ -77,6 +111,7 @@ public class ChatAppClient implements Runnable {
 			catch (IOException ie) {
 				ie.printStackTrace();
 			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SignatureException e) {
 				// TODO Auto-generated catch block
@@ -116,7 +151,7 @@ public class ChatAppClient implements Runnable {
 				Util.printlnc("Successfully Verified! Extracting Public Key", Util.Color.YELLOW_BOLD);
 				Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
 				PublicKey serverPublicKey = m.publicCert.getPublicKey();
-				publicKey = serverPublicKey;
+				//publicKey = serverPublicKey;
 				Util.printByteArray("Public key", serverPublicKey.getEncoded());
 
 				Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
@@ -136,28 +171,6 @@ public class ChatAppClient implements Runnable {
 		String hostname = "localhost";
 		int port = 6000;
 
-		 // Read the private keystore and get Private Key
-		 KeyStore keyStore = KeyStore.getInstance("JKS");
-		 // keystore password is required to access keystore 
-		 char[] pass = ("changeit").toCharArray();
- 
-		 //Keystore File
-		 FileInputStream keyFile = new FileInputStream("./keys/keystore.jks");
-		 //load keystore
-		 keyStore.load(keyFile, pass);
- 
-		 Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
-		 Util.printlnc("Loading Client Private and Public Keys", Util.Color.YELLOW_BOLD);
-		 Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
-		 clientPrivateKey = (PrivateKey) keyStore.getKey("clientkey", pass);
-		
-		 
-		 clientPublicCertificate = (X509Certificate) keyStore.getCertificate("clientkey");
-		 clientPublicKey = clientPublicCertificate.getPublicKey();
-
-		 Util.printByteArray("Private key", clientPrivateKey.getEncoded());
-		 System.out.println();
-		 Util.printByteArray("Public key", clientPublicKey.getEncoded());
 
 		/* //Start up checks
 		if(args.length == 0)//use hostname command to get hostname

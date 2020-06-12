@@ -14,15 +14,44 @@ public class ChatAppServer implements Runnable {
 	ServerSocket server;
 	Thread serverThread = null;
 
-	static PrivateKey serverPrivateKey;
-	static X509Certificate serverPublicCertificate;
-	static PublicKey serverPublicKey;
-	private static X509Certificate clientPublicCertificate;
-	private static PublicKey clientPublicKey;
+	PrivateKey serverPrivateKey;
+	public X509Certificate serverPublicCertificate;
+	public PublicKey serverPublicKey;
+	public  X509Certificate clientPublicCertificate;
+	public  PublicKey clientPublicKey;
 
 	public User serverUser;
 
-	public ChatAppServer(int port_num) throws IOException {
+	public ChatAppServer(int port_num) throws IOException, NoSuchAlgorithmException, CertificateException,
+			UnrecoverableKeyException, KeyStoreException {
+
+		 // Read the private keystore and get Private Key
+		 KeyStore keyStore = KeyStore.getInstance("JKS");
+		 // keystore password is required to access keystore 
+		 char[] pass = ("changeit").toCharArray();
+ 
+		 //Keystore File
+		 FileInputStream keyFile = new FileInputStream("./keys/keystore.jks");
+		 //load keystore
+		 keyStore.load(keyFile, pass);
+ 
+		 Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+		 Util.printlnc("Loading Server Private and Public Keys", Util.Color.YELLOW_BOLD);
+		 Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+		 serverPrivateKey = (PrivateKey) keyStore.getKey("chatappkeys", pass);
+		 
+ 
+		 //Public key
+		 serverPublicCertificate = (X509Certificate) keyStore.getCertificate("chatappkeys");
+		 serverPublicKey = serverPublicCertificate.getPublicKey();
+		 
+		 clientPublicCertificate = (X509Certificate) keyStore.getCertificate("clientkey");
+		 clientPublicKey = clientPublicCertificate.getPublicKey();
+ 
+		 Util.printByteArray("Private key", serverPrivateKey.getEncoded());
+		 System.out.println();
+		 Util.printByteArray("Public key", serverPublicKey.getEncoded());
+
 		serverUser = new User("Server", "hostname");
 		activeClients = new ArrayList<>();
 		port_number = port_num;
@@ -85,32 +114,7 @@ public class ChatAppServer implements Runnable {
         Util.printlnc("Server Started", Util.Color.CYAN_BOLD_BRIGHT);
         Util.printlnc("--------------------------------------------", Util.Color.CYAN_BOLD_BRIGHT);
 
-        // Read the private keystore and get Private Key
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        // keystore password is required to access keystore 
-        char[] pass = ("changeit").toCharArray();
-
-        //Keystore File
-        FileInputStream keyFile = new FileInputStream("./keys/keystore.jks");
-        //load keystore
-        keyStore.load(keyFile, pass);
-
-        Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
-        Util.printlnc("Loading Server Private and Public Keys", Util.Color.YELLOW_BOLD);
-        Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
-		serverPrivateKey = (PrivateKey) keyStore.getKey("chatappkeys", pass);
-		
-
-        //Public key
-        serverPublicCertificate = (X509Certificate) keyStore.getCertificate("chatappkeys");
-		serverPublicKey = serverPublicCertificate.getPublicKey();
-		
-		clientPublicCertificate = (X509Certificate) keyStore.getCertificate("clientkey");
-        clientPublicKey = clientPublicCertificate.getPublicKey();
-
-        Util.printByteArray("Private key", serverPrivateKey.getEncoded());
-        System.out.println();
-		Util.printByteArray("Public key", serverPublicKey.getEncoded());
+       
 		
 		ChatAppServer main_server = null;
 		System.out.println("Starting Server");

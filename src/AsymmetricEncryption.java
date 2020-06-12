@@ -8,24 +8,25 @@ import java.security.*;
 
 public class AsymmetricEncryption implements Serializable {
 
-    public static Cipher cipher;
     public static IvParameterSpec ivSpec;
 
     public AsymmetricEncryption() throws NoSuchAlgorithmException, NoSuchPaddingException {
         Security.addProvider(new BouncyCastleProvider());
-        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
     }
 
     public static byte[] encrypt(String message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException,
-            BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException 
+            BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException,
+            NoSuchAlgorithmException, NoSuchPaddingException 
     {
         return encrypt(message.getBytes(), secretKey);
     }
 
     public static byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException,
             IllegalBlockSizeException,
-            BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException 
+            BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException,
+            NoSuchAlgorithmException, NoSuchPaddingException 
     {
+        Cipher cipher =  Cipher.getInstance("RSA/ECB/PKCS1Padding");
         //System.out.printf("Encrypting message '%s'...\n", message);
         //System.out.printf("Key Type: %s\n", secretKey.getClass());
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -35,8 +36,10 @@ public class AsymmetricEncryption implements Serializable {
         return encryptedMessage;
     }
 
-    public static String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
+    public static String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchPaddingException
     {
+        Cipher cipher =  Cipher.getInstance("RSA/ECB/PKCS1Padding");
         //System.out.println("Decrypting message...");
         //Util.printByteArray("Cipher Text", encryptedMessage);
         //System.out.printf("Key Type: %s\n", secretKey.getClass());
@@ -48,8 +51,10 @@ public class AsymmetricEncryption implements Serializable {
         return decryptedMessage;
     }
 
-    public static byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException
+    public static byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchPaddingException
     {
+        Cipher cipher =  Cipher.getInstance("RSA/ECB/PKCS1Padding");
         //System.out.println("Decrypting Byte Array...");
         //Util.printByteArray("Cipher Text", encryptedMessage);
         //System.out.printf("Key Type: %s\n", secretKey.getClass());

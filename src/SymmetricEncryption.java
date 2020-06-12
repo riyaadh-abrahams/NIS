@@ -45,15 +45,10 @@ public class SymmetricEncryption implements Serializable
     public static byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException 
     {
-        System.out.println("Cipher");
         Cipher cipher = makeCipher();
-        System.out.println(cipher);
-
-        System.out.println("IVSPEC");
         IvParameterSpec ivspec = getIvSpec();
-        System.out.println(ivspec);
 
-        System.out.printf("Encrypting message '%s'...\n", message);
+        //System.out.printf("Encrypting message '%s'...\n", message);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
         byte[] encryptedMessage = cipher.doFinal(message);
         //System.out.println("Encryption Complete!");

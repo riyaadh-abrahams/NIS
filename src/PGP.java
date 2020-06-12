@@ -44,28 +44,32 @@ public class PGP implements Serializable {
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException
     {
-        System.out.println("Creating Encrypted Session Key");
+        System.out.println("Creating Session Key...");
         Key sessionKey = SymmetricEncryption.generateKey();
-
-        System.out.println("Compressing Message...");
-        byte[] compressedMessage = Util.zip(message);
-        System.out.println("Size Before: " + message.getBytes().length);
-        System.out.println("Size After: " + compressedMessage.length);
+        Util.printByteArray("Session key created: ", sessionKey.getEncoded());
         
-        System.out.println("Encrypting Message with Session Key...");
-        byte[] encryptedMessage = SymmetricEncryption.encrypt(compressedMessage, sessionKey);
-        this.encryptedMessage = encryptedMessage;
-        Util.printByteArray("Cipher Text: ", encryptedMessage);
-
         System.out.println("Encrypting session Key with recipient public key...");
         byte[] encryptedSessionKey = AsymmetricEncryption.encrypt(sessionKey.getEncoded(), recipientPublicKey);
         this.encryptedSessionKey =  encryptedSessionKey;
         Util.printByteArray("Cipher Session key: ", encryptedSessionKey);
+
+        System.out.println("Compressing Message...");
+        byte[] compressedMessage = Util.zip(message);
+        Util.printByteArray("Compressed message: ", compressedMessage);
+        System.out.println("Size Before: " + message.getBytes().length);
+        System.out.println("Size After: " + compressedMessage.length);
+        
+        System.out.println("Encrypting Message with Session Key...");
+        System.out.println("Plain Text: " + message);
+        byte[] encryptedMessage = SymmetricEncryption.encrypt(compressedMessage, sessionKey);
+        this.encryptedMessage = encryptedMessage;
+        Util.printByteArray("Cipher Text: ", encryptedMessage);
     }
 
 
     public byte[] DecryptSessionKey(PrivateKey recipientPrivateKey) throws InvalidKeyException,
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchPaddingException {
 
         byte[] decryptedSessionKey = AsymmetricEncryption.decryptByteArray(this.encryptedSessionKey, recipientPrivateKey);
         return decryptedSessionKey;

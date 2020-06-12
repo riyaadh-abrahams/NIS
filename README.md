@@ -10,13 +10,13 @@ javac -sourcepath src/*.java -cp "lib/*;src"
 ## How to Run
 
 1) `Run the Server`
-    java -cp "src;lib/*" Server
+    java -cp "src;lib/*" ChatAppServer
 
 2) `Run the Client` (You will be asked to enter your name)
-    java -cp "src;lib/*" Client
+    java -cp "src;lib/*" ChatAppClient
 
-3) `Run another Client` (You will 2 clients to send messages to each other)
-    java -cp "src;lib/*" Client
+3) `Run another Client` (optional)
+    java -cp "src;lib/*" ChatAppClient
 
 4) `Send private message`
     Use `@name <message>` to send messages to other clients
