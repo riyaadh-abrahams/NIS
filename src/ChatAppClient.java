@@ -87,6 +87,9 @@ public class ChatAppClient implements Runnable {
 			thread = new Thread(this);
 			thread.start();
 		}
+
+		Message m = new Message(Message.MessageType.SEND_CERTIFICATE,"Here is my public certificate", activeUser, clientPublicCertificate);
+		outputObject.writeObject(m);
 	}
 
 	// do the follwoing while ChatAppClient is running
@@ -103,7 +106,7 @@ public class ChatAppClient implements Runnable {
 				System.out.println(serverPublicKey.hashCode());
 				
 				PGP myPgp = new PGP(serverPublicKey, clientPrivateKey, userInput);
-				Message m = new Message(userInput, activeUser, myPgp);
+				Message m = new Message(Message.MessageType.ENCRYPTED,userInput, activeUser, myPgp);
 
 				outputObject.writeObject(m);
 				// System.out.println("Message Sent\n");
@@ -140,7 +143,7 @@ public class ChatAppClient implements Runnable {
 		System.out.println(m.toString());
 
 		try {
-			if (m.getData().split(",")[0].equals("#Welcome")) {
+			if (m.type == Message.MessageType.SEND_CERTIFICATE) {
 				Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
 				Util.printlnc("Recieved Public Certificate! Verifying...", Util.Color.YELLOW_BOLD);
 				Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);

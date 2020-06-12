@@ -64,7 +64,7 @@ public class Test {
             String decryptedText = asymmetricEncryption.decrypt(cyphertext, publicKey); */
 
             String testMessage = generate(() -> "Hello").limit(100).collect(joining());
-            PGP testpgp = new PGP(clientPublicKey, privateKey, "PGP Test Hello World " + testMessage);
+            PGP testpgp = new PGP(clientPublicKey, privateKey, "PGP Test Hello World ");
 
             String finalMessage = testpgp.GetDecryptedMessage(clientPrivateKey, publicKey);
             System.out.println(finalMessage);

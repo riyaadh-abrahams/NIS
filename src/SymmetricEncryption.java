@@ -6,25 +6,39 @@ import javax.crypto.spec.IvParameterSpec;
 import java.io.Serializable;
 import java.security.*;
 
-public class SymmetricEncryption implements Serializable
-{
+public class SymmetricEncryption implements Serializable {
+    static IvParameterSpec ivSpec;
+    static Cipher cipher;
+
+    static {
+        try {
+            makeIvSpec();
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            makeCipher();
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     public SymmetricEncryption() throws NoSuchAlgorithmException, NoSuchPaddingException {
         Security.addProvider(new BouncyCastleProvider());
-    }
-    
-    public static Cipher makeCipher() throws NoSuchAlgorithmException, NoSuchPaddingException
-    {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        return cipher;
+       
     }
 
-    public static IvParameterSpec getIvSpec() throws NoSuchAlgorithmException
-    {
+    public static void makeCipher() throws NoSuchAlgorithmException, NoSuchPaddingException {
+        cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+    }
+
+    public static void makeIvSpec() throws NoSuchAlgorithmException {
         SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
         byte[] random = new byte[16];
         secureRandom.nextBytes(random);
-        return new IvParameterSpec(random);
+        ivSpec = new IvParameterSpec(random);
     }
 
     public static Key generateKey() throws NoSuchAlgorithmException
@@ -45,11 +59,15 @@ public class SymmetricEncryption implements Serializable
     public static byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException 
     {
-        Cipher cipher = makeCipher();
-        IvParameterSpec ivspec = getIvSpec();
+
+        System.out.println("CIPHER");
+        System.out.println(cipher);
+
+        System.out.println("IVSPEC");
+        System.out.println(ivSpec);
 
         //System.out.printf("Encrypting message '%s'...\n", message);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
         byte[] encryptedMessage = cipher.doFinal(message);
         //System.out.println("Encryption Complete!");
         //Util.printByteArray("Cipher Text:", encryptedMessage);
@@ -59,10 +77,10 @@ public class SymmetricEncryption implements Serializable
     public static String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException
     {
-        Cipher cipher = makeCipher();
+
         //System.out.println("Decrypting message...");
         //Util.printByteArray("Cipher Text", encryptedMessage);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, getIvSpec());
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
         String decryptedMessage = new String(cipher.doFinal(encryptedMessage));
         //System.out.printf("Decryption Complete! Output: '%s'\n", decryptedMessage);
 
@@ -72,10 +90,10 @@ public class SymmetricEncryption implements Serializable
     public static byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException
     {
-        Cipher cipher = makeCipher();
+
         //System.out.println("Decrypting message...");
         //Util.printByteArray("Cipher Text", encryptedMessage);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, getIvSpec());
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
         byte[] decryptedMessage = cipher.doFinal(encryptedMessage);
         //System.out.printf("Decryption Complete! Output: '%s'\n", decryptedMessage);
         return decryptedMessage;

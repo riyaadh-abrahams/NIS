@@ -89,11 +89,15 @@ public class PGP implements Serializable {
         byte[] compressedMessage = SymmetricEncryption.decryptByteArray(this.encryptedMessage, sessionKey);
         Util.printByteArray("Decrypted. Compressed message: ", compressedMessage);
 
+        System.out.println("Decompressing message...");
+        String finalMessage = Util.unzip(compressedMessage);
+        System.out.println("Message Decompressed. Final Output: " +finalMessage);
+        
         //verify signature
         System.out.println("Verifying Signature...");
         Signature verificationAlgorithm = Signature.getInstance("SHA256WithRSA");
         verificationAlgorithm.initVerify(senderPublickey);
-        verificationAlgorithm.update(compressedMessage);
+        verificationAlgorithm.update(finalMessage.getBytes());
         boolean matches = verificationAlgorithm.verify(signature);
 
         if(matches) {
@@ -101,11 +105,8 @@ public class PGP implements Serializable {
         } else {
             System.out.println("Signature Not Correct");
         }
-
-        System.out.println("Decompressing message...");
-        String finalMessage = Util.unzip(compressedMessage);
-        System.out.println("Message Decompressed. Final Output: " +finalMessage);
         return finalMessage;
+
     }
 
     

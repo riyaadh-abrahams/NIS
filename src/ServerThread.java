@@ -4,6 +4,7 @@ import java.net.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.SignatureException;
 
 import javax.crypto.BadPaddingException;
@@ -19,14 +20,15 @@ public class ServerThread extends Thread {
 	int id;
 	ObjectOutputStream output;
 	ObjectInputStream input;
+	PublicKey clientPublicKey;
 
 	public ServerThread(ChatAppServer server, Socket client) {
 		this.client = client;
 		this.server = server;
 		id = client.getPort();// the port of each socket uniquely identifies them
 		try {
-			output = new ObjectOutputStream(client.getOutputStream());// send to clients output
-			input = new ObjectInputStream(client.getInputStream());// input from client
+			output = new ObjectOutputStream(client.getOutputStream()); // send to clients output
+			input = new ObjectInputStream(client.getInputStream()); // input from client
 		} catch (IOException e) {
 			System.out.println("Error in ServerThread con(), IO");
 		}
@@ -54,7 +56,36 @@ public class ServerThread extends Thread {
 				System.out.println(server.clientPublicKey.hashCode());
 				System.out.println("server public key");
 				System.out.println(server.serverPublicKey.hashCode());
-				System.out.println(incomingMessage.DecryptAndGet(server.serverPrivateKey, server.clientPublicKey));// print message to server
+
+				if(incomingMessage.type == Message.MessageType.SEND_CERTIFICATE)
+				{
+					Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+					Util.printlnc("Recieved Public Certificate! Verifying...", Util.Color.YELLOW_BOLD);
+					Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+	
+					System.out.println(incomingMessage.publicCert.toString());
+	
+					Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+					Util.printlnc("Successfully Verified! Extracting Public Key", Util.Color.YELLOW_BOLD);
+					Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
+					clientPublicKey = incomingMessage.publicCert.getPublicKey();
+					//publicKey = serverPublicKey;
+					Util.printByteArray("Public key", clientPublicKey.getEncoded());
+	
+					Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
+					Util.printlnc("Secure Connection Established!\nEnter your message ", Util.Color.GREEN_BOLD);
+					Util.printlnc("--------------------------------------------", Util.Color.GREEN_BOLD);
+					Util.printc("\r>>>", Util.Color.GREEN_BOLD);
+				}
+				else if(incomingMessage.type == Message.MessageType.UNENCRYPTED)
+				{
+					System.out.println(incomingMessage.toString());// print message to server
+				}
+				else if(incomingMessage.type == Message.MessageType.ENCRYPTED)
+				{
+					System.out.println(incomingMessage.DecryptAndGet(server.serverPrivateKey, clientPublicKey));
+				}
+				
 																							// console
 
 				// send input to server, which will send it to all clients
@@ -67,8 +98,7 @@ public class ServerThread extends Thread {
 				System.out.println("Error in ServerThread run(), Class error");
 				System.out.println(ee);
 				System.exit(1);
-			} // end catch
-			catch (InvalidKeyException e) {
+			} catch (InvalidKeyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalBlockSizeException e) {

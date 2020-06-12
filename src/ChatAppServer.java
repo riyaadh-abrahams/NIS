@@ -93,7 +93,7 @@ public class ChatAppServer implements Runnable {
 		Util.printlnc("--------------------------------------------", Util.Color.YELLOW_BOLD);
 		System.out.println();
 
-		activeClients.get(activeClients.size() - 1).recieveMessage(new Message("#Welcome, Here is our Certificate ", serverUser, serverPublicCertificate));
+		activeClients.get(activeClients.size() - 1).recieveMessage(new Message( Message.MessageType.SEND_CERTIFICATE,"Welcome, Here is our Certificate ", serverUser, serverPublicCertificate));
 	}// end addClient
 
 	// send given message to all active clients

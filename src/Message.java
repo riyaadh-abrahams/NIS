@@ -13,28 +13,39 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+
+
 public class Message implements Serializable {
+	public enum MessageType{
+		UNENCRYPTED,
+		ENCRYPTED,
+		SEND_CERTIFICATE
+	}
 	// attributes
-	private String data;// the actual message
-	private User userFrom; // user that send the message
+	public MessageType type;
+	public String data;// the actual message
+	public User userFrom; // user that send the message
 	public X509Certificate publicCert;
 	public PGP pgp;
 
 	public Message(String data, User user) {
 		this.data = data;
 		userFrom = user;
+		this.type = MessageType.UNENCRYPTED;
 	}
 
-	public Message(String data, User user, X509Certificate x509Certificate) {
+	public Message(MessageType type ,String data, User user, X509Certificate x509Certificate) {
 		this.data = data;
 		userFrom = user;
 		this.publicCert = x509Certificate;
+		this.type = type;
 	}
 
-	public Message(String data, User user, PGP pgp) {
+	public Message(MessageType type ,String data, User user, PGP pgp) {
 		this.data = data;
 		userFrom = user;
 		this.pgp = pgp;
+		this.type = type;
 	}
 
 	public String getData() {
