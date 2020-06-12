@@ -5,6 +5,7 @@ import java.security.*;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class PGP implements Serializable {
@@ -15,14 +16,17 @@ public class PGP implements Serializable {
     public byte[] encryptedSessionKey; // used to decrypt message, should be decrypted using recipient private key
     public byte[] signature; // for integrity
     public byte[] encryptedMessage; // compressed and encrypted using symmetric encryption
+    byte[] iv;
 
     public PGP(PublicKey recipientPublicKey, PrivateKey senderPrivateKey, String message)
             throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             UnsupportedEncodingException {
-            
+
+            iv = SymmetricEncryption.makeIvSpec().getIV();
             SignMessage(senderPrivateKey, message);
             CreateAndEncryptSessionKeyAndMessage(recipientPublicKey, message);
+
            
 
             //Util.printByteArray("Encrypted Session Key: ", encryptedSessionKey);
@@ -45,7 +49,7 @@ public class PGP implements Serializable {
         this.signature = signature;
     }
 
-    void CreateAndEncryptSessionKeyAndMessage(PublicKey recipientPublicKey, String message)
+     void CreateAndEncryptSessionKeyAndMessage(PublicKey recipientPublicKey, String message)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException
     {
@@ -59,9 +63,10 @@ public class PGP implements Serializable {
         System.out.println("Size Before: " + message.getBytes().length);
         System.out.println("Size After: " + compressedMessage.length);
 
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
         System.out.println("Encrypting Message with Session Key...");
         System.out.println("Plain Text: " + message);
-        byte[] encryptedMessage = SymmetricEncryption.encrypt(compressedMessage, sessionKey);
+        byte[] encryptedMessage = SymmetricEncryption.encrypt(compressedMessage, sessionKey, ivSpec);
         this.encryptedMessage = encryptedMessage;
         Util.printByteArray("Cipher Text: ", encryptedMessage);
         
@@ -93,9 +98,10 @@ public class PGP implements Serializable {
         Key sessionKey = new SecretKeySpec(DecryptSessionKey(recipientPrivateKey), "AES");
         Util.printByteArray("Decrypted. Plain text session key: ", sessionKey.getEncoded());
 
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
         Util.printByteArray("Cipher Text: ", encryptedMessage);
         System.out.println("Decrypting message...");
-        byte[] compressedMessage = SymmetricEncryption.decryptByteArray(this.encryptedMessage, sessionKey);
+        byte[] compressedMessage = SymmetricEncryption.decryptByteArray(this.encryptedMessage, sessionKey, ivSpec);
         Util.printByteArray("Decrypted. Compressed message: ", compressedMessage);
 
         System.out.println("Decompressing message...");
@@ -110,13 +116,12 @@ public class PGP implements Serializable {
         boolean matches = verificationAlgorithm.verify(signature);
 
         if(matches) {
-            System.out.println("Signature Verified");
+            System.out.println("Signature Verified ");
         } else {
             System.out.println("Signature Not Correct");
         }
         return finalMessage;
 
     }
-
     
 }

@@ -6,16 +6,9 @@ import javax.crypto.spec.IvParameterSpec;
 import java.security.*;
 
 public class SymmetricEncryption {
-    static IvParameterSpec ivSpec;
     static Cipher cipher;
 
     static {
-        try {
-            makeIvSpec();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         try {
             makeCipher();
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
@@ -33,11 +26,13 @@ public class SymmetricEncryption {
         cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     }
 
-    public static void makeIvSpec() throws NoSuchAlgorithmException {
+    public static IvParameterSpec makeIvSpec() throws NoSuchAlgorithmException {
         SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
         byte[] random = new byte[16];
         secureRandom.nextBytes(random);
-        ivSpec = new IvParameterSpec(random);
+        IvParameterSpec ivSpec = new IvParameterSpec(random);
+        return ivSpec;
+
     }
 
     public static Key generateKey() throws NoSuchAlgorithmException
@@ -49,13 +44,13 @@ public class SymmetricEncryption {
         //Util.printByteArray("Key Generated:", key.getEncoded());
         return key;
     }
-    public static byte[] encrypt(String message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+    public static byte[] encrypt(String message, Key secretKey, IvParameterSpec ivSpec) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException 
     {
-       return encrypt(message.getBytes(), secretKey);
+       return encrypt(message.getBytes(), secretKey, ivSpec);
     }
 
-    public static byte[] encrypt(byte[] message, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+    public static byte[] encrypt(byte[] message, Key secretKey, IvParameterSpec ivSpec) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException 
     {
 
@@ -67,7 +62,7 @@ public class SymmetricEncryption {
         return encryptedMessage;
     }
 
-    public static String decrypt(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+    public static String decrypt(byte[] encryptedMessage, Key secretKey, IvParameterSpec ivSpec) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException
     {
 
@@ -80,7 +75,7 @@ public class SymmetricEncryption {
         return decryptedMessage;
     }
 
-    public static byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+    public static byte[] decryptByteArray(byte[] encryptedMessage, Key secretKey, IvParameterSpec ivSpec) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchPaddingException
     {
 
